@@ -54,7 +54,11 @@ data <- fish; col <- "count"
 notNA <- subset(data, !is.na(data[, col]))
 ## Of the non-NAs, which values would be lost if the column were coerced into numeric?
 bad <- subset(notNA, is.na(suppressWarnings(as.numeric(notNA[, col]))))
-## Return only unique bad entries
-unique(bad[, col])
+## Return only unique bad entries (if there are any)
+if (nrow(bad) != 0) {
+  unique(bad[, col])
+} else {
+  print("No bad numbers.")
+}
 
 # End ------------------------------------------------------------------
