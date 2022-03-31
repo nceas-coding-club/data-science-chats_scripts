@@ -21,6 +21,9 @@
 .Rproj.user/
 *.Rproj
 
+# Ignore knitted-html files
+*.html
+
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
