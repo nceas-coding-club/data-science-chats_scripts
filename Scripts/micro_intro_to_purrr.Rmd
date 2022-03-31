@@ -1,0 +1,176 @@
+---
+title: "Mini Intro to Purrr package"
+author: "Camila Vargas"
+date: "3/29/2022"
+output: html_document
+---
+This is a micro-introduction to the `purrr` package. The intention of this script is to show some of the concepts and functions related to `purrr` to start a conversation about `purrr`, for loops and apply functions at the NCEAS data-science-chat.
+
+## Introduction
+
+_What is `purrr`?_
+- Part of the `tidyverse`
+- Takes the tasks that the `apply` suit of functions do in base R.
+
+_Why `purrr`?_
+- To apply operations across many dimensions of your data
+-  improving your ability to keep even complex analyses "tidy" (enhancing functional programming)
+
+
+**Goal of this chat:**
+- Compare three ways of doing the same operations: loops, apply and `purrr`
+- Get you excited about `purrr` and its power
+- Learn something new
+
+
+When reading about `purrr`, two concepts that immediately come up **Lists** and **Functional Programming**.
+
+**Functional Programming** - trying to use functions (preferably "pure" ones) to accomplish most of your complex and repetitive tasks (don't copy and paste more then 3 times - H. Wickham)
+
+Functions in R take any number of named inputs, do operations on them, and returns the last thing produced inside the function (or whatever you specify using return)
+
+**Lists** are powerful objects that allow you to store all kinds of information in one place (not only atomic vectors, vectors with different length).
+They can also be a pain to deal with, since we are no longer in the nice 2-D structure of a traditional data frame.
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(repurrrsive)
+library(listviewer)
+```
+
+
+## Loops
+Main use of loops it to iterate in R in various scenarios.
+
+The long repetitive way of doing an operation looks like
+```{r}
+# Create a vector of the mean values of all the columns of the mtcars dataset
+mean_vec <- c(mean(mtcars$mpg), mean(mtcars$cyl), mean(mtcars$disp), mean(mtcars$hp),
+              mean(mtcars$drat), mean(mtcars$wt), mean(mtcars$qsec), mean(mtcars$vs),
+              mean(mtcars$am), mean(mtcars$gear), mean(mtcars$carb))
+
+mean_vec
+
+```
+
+The loop way
+
+```{r}
+# Create an "empty" vector
+mean_vec_loop <- vector("double", ncol(mtcars))
+
+# Populate the vector with means
+for (i in seq_along(mtcars)) {
+  mean_vec_loop[[i]] <- mean(mtcars[[i]])
+}
+
+mean_vec_loop
+```
+
+- Results are the same
+- Not much differences in computing time
+- But, no-loop long code - prone to errors
+
+
+## `apply`
+Higher Order Functions. Similar to what we did earlier, these are functions that can take other functions as an argument. 
+
+The benefit of using higher order functions instead of a for loop is that they allow us to think about what code we are executing at a higher level. Think of it as: "apply this to that" rather than "take the first item, do this, take the next item, do this..."
+
+```{r}
+# Create a list/vector of the mean values of all the columns of the mtcars dataset
+lapply(mtcars, mean) %>% head # Returns a list
+sapply(mtcars, mean) %>% head # Returns a vector
+```
+
+- Main argument to use `apply` or `purrr` is not execution time is simplicity and readability of the code.
+
+## `purrr`
+Main function in this package is `map()`. This function is used in a similar way that `apply`.
+
+```{r}
+# Create a list/vector of the mean values of all the columns of the mtcars dataset
+map(mtcars, mean) %>% head # Returns a list
+
+map_dbl(mtcars, mean) %>% head # Returns a vector - of class double
+```
+
+Other `purrr` functions
+
+`map_lgl()` - makes a logical vector.
+`map_int()` - makes an integer vector.
+`map_dbl()` - makes a double vector.
+`map_chr()` - makes a character vector.
+
+## More `purrr` examples
+
+Using the Game of Throne data from the `repurrrsive` package. Where each list has information of one character of the show.
+
+```{r}
+str(got_chars, list.len =  3)
+```
+
+Cool interactive approach to view lists using the `listviewer` package.
+```{r}
+listviewer::jsonedit(got_chars)
+```
+
+
+So, how do we start poking around in this database?
+
+Suppose we wanted only the first 5 characters in the list
+
+```{r}
+got_chars[1:5] %>% 
+  str(max.level = 1)
+```
+
+Now, suppose that we jut want to look at the name of the first 5 characters. 
+
+You might think that `got_chars[[1:5]]$name` would do the trick...
+
+```{r, error = T}
+got_chars[[1:5]]$name
+```
+
+Nope.
+
+So we could do
+
+```{r}
+names <- vector(mode = "character",5)
+for (i in 1:5){
+  
+  names[i] <- got_chars[[i]]$name
+}
+names
+```
+
+That works, but certainly not ideal.
+
+Enter `purrr`
+
+```{r}
+got_chars[1:5] %>%
+  map_chr('name') #goes through the character list form 1 to f and prints out the name
+```
+
+Using `listviewer`
+
+```{r}
+
+got_chars[1:5] %>%
+  set_names(map_chr(.,'name')) %>%
+  listviewer::jsonedit()
+
+```
+
+
+
+## Resources
+Examples and information comes from the sources below.
+
+- [Dan Ovando EcoDataScience purrr workshop](https://github.com/camilavargasp/learn-purrr)
+- [To purrr or not to purrr by Nicolas Attalides](https://www.r-bloggers.com/2018/05/to-purrr-or-not-to-purrr/)
