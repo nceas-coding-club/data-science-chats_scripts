@@ -1,0 +1,78 @@
+---
+title: "Exploring Packrat"
+author: "Althea Marks"
+date: '2022-05-04'
+output: html_document
+---
+
+## Introduction
+
+_Have You Ever?_ 
+
+Wrote code, documented your changes in Github, and thought you were looking out for future you. Only to come back to your code later to realize it is broken? Maybe you are on a new computer, a new version of R or Rstudio, or you recently updated all your packages?
+
+_What is `packrat`?_
+
+- Creates a private library for each project's packages
+- Can install packages your project depends on rather than the ones in the environment
+- Records the exact package versions used in the code, and those are the ones installed
+
+_Why `packrat`?_
+
+- Predictability
+- Sanity
+- Save time
+
+**Goal of this chat:**
+
+- Figure out how to set up private package library for `collab-data-science-chats`
+- Take "snapshot" of private library
+- Recreate library on different machine
+
+
+```{r setup, eval=F}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages(packrat)
+library(packrat)
+```
+
+**Step 1** Create new project
+
+**Step 2** Set directory to use `packrat`
+
+```{r, eval=F}
+packrat::init("./packrat-test-project")
+```
+
+**Boom** Apparently its that simple
+All packages installed after this point within this project are only available within the `packrat` project. Project libraries are isolated. Now you can update a package in one project and it will not break your older code that used a earlier version. 
+
+**Look at New Directory Created by `inst()`**
+
+- **packrat/packrat.lock**: Lists exact package versions used, including dependencies. **Do not edit by hand**
+- **packrat/packrat.opts**: Project-specific `packrat` options. Not sure what we can do with this. `?packrat-options` for more information.
+- **packrat/lib/**: This is the private package library
+- **packrat/src/**: Source packages of all the dependencies that `packrat` has been made aware of.
+- **.Rprofile**: "Tells R to use the private package library (when it is started from the project directory)."
+
+**Test Run**
+
+```{r, eval=F}
+library(tidyverse)
+library(lubridate)
+library(agricolae)
+library(stargazer)
+
+packrat::snapshot()
+```
+
+"If you have automatic snapshots turned on, Packrat will record package upgrades and additions in the background, so you don’t even need to remember to call ::snapshot() manually unless you’re performing a less common action." 
+
+*How can we tell if this is set up?*
+
+
+## Resources
+Examples and information comes from the sources below.
+
+- [Packrat Package Documentation](https://rstudio.github.io/packrat/)
+- [Matt's recomended paper](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1375986)
